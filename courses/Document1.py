@@ -25,7 +25,7 @@ class ListCreateReview(generics.ListCreateAPIView):
 				serializer.save(course=course)
 				
 		
-class RetrieveUpdateDestroyReview(generics.RetrieveUpdateDestroyAPIView):
+class RetrieveUpdateDestroyeview(generics.RetrieveUpdateDestroyAPIView):
 		queryset = models.Review.objects.all()
 		serializer_class = serializers.ReviewSerializer
 		

@@ -5,13 +5,13 @@ from . import models
 class ReviewSerializer(serializers.ModelSerializer):
 	class Meta:
 		extra_kwargs = {
-			'email': {'write_obly': True}
+			'email': {'write_only': True}
 		}
 		fields = ('id',
 							'course',
 							'name',
 							'email',
-							'review',
+							'comment',
 							'rating',
 							'created_at')
 		model = models.Review
