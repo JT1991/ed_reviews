@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework import mixins
+from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
@@ -40,22 +41,35 @@ class RetrieveUpdateDestroyReview(generics.RetrieveUpdateDestroyAPIView):
 					pk=self.kwargs.get('pk')
 				)
 
-class CourseViewSet(viewsets.ModelViewSet):
-                queryset = models.Course.objects.all()
-                serializer_class = serializers.CourseSerializer
+class IsSuperUser(permissions.BasePermission):
+		def has_permission(self, request, view):
+				if request.user.is_superuser:
+					return True
+				elif request.method == 'DELETE':
+					return False
+				else:
+					return True
 
-                @detail_route(methods=['get'])
-                def reviews(self, request, pk=None):
-                    self.pagination_class.page_size = 1
-                    reviews = models.Review.objects.filter(course_id=pk)
-                    page = self.paginate_queryset(reviews)
-                    if page is not None:
-                        serializer = serializers.ReviewSerializer(page, many=True)
-                        return self.get_paginated_response(serializer.data)                        
-                    serializer = serializers.ReviewSerializer(
-                        course.reviews.all(), many=True
-                        )
-                    return Response(serializer.data)
+class CourseViewSet(viewsets.ModelViewSet):
+		permission_classes = (
+				IsSuperUser,
+				permissions.DjangoModelPermissions,
+			)
+		queryset = models.Course.objects.all()
+		serializer_class = serializers.CourseSerializer
+
+		@detail_route(methods=['get'])
+		def reviews(self, request, pk=None):
+				self.pagination_class.page_size = 1
+				reviews = models.Review.objects.filter(course_id=pk)
+				page = self.paginate_queryset(reviews)
+				if page is not None:
+						serializer = serializers.ReviewSerializer(page, many=True)
+						return self.get_paginated_response(serializer.data)                        
+				serializer = serializers.ReviewSerializer(
+						course.reviews.all(), many=True
+				)
+				return Response(serializer.data)
 
 
 class ReviewViewSet(mixins.CreateModelMixin,
@@ -63,5 +77,5 @@ class ReviewViewSet(mixins.CreateModelMixin,
                     mixins.UpdateModelMixin,
                     mixins.DestroyModelMixin,
                     viewsets.GenericViewSet):
-                queryset = models.Review.objects.all()
-                serializer_class = serializers.ReviewSerializer
+        queryset = models.Review.objects.all()
+        serializer_class = serializers.ReviewSerializer
